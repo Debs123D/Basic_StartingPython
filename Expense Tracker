@@ -1,0 +1,21 @@
+
+expenses = []
+
+while True:
+    item = input("Enter item name (or type 'done' to finish): ")
+    if item.lower() == 'done':
+        break
+    try:
+        amount = float(input(f"Enter amount for '{item}': ₹ "))
+        expenses.append((item, amount))
+    except ValueError:
+        print("Please enter a valid number.")
+
+# Show summary
+print("\n🧾 Expense Summary:")
+total = 0
+for item, amount in expenses:
+    print(f"- {item}: ₹{amount}")
+    total += amount
+
+print(f"\n💰 Total spent: ₹{total}")
