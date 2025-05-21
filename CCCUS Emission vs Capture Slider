@@ -1,0 +1,51 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import ipywidgets as widgets
+from IPython.display import display
+
+# Sliders for user input
+initial_emissions_slider = widgets.FloatSlider(value=1000, min=500, max=2000, step=50, description='Initial CO₂ (Mt):')
+reduction_rate_slider = widgets.FloatSlider(value=1.5, min=0.0, max=5.0, step=0.1, description='Annual Red. (%):')
+ccus_start_slider = widgets.IntSlider(value=2030, min=2025, max=2045, step=1, description='CCUS Start:')
+ccus_capture_slider = widgets.FloatSlider(value=2.0, min=0.0, max=10.0, step=0.1, description='CCUS Growth (%):')
+
+# Function to update model
+def update_model(initial_emissions, reduction_rate, ccus_start, ccus_capture):
+    years = list(range(2025, 2051))
+    emissions = []
+    ccus = []
+    net_emissions = []
+
+    current_emissions = initial_emissions
+    current_ccus = 0
+
+    for year in years:
+        emissions.append(current_emissions)
+        if year >= ccus_start:
+            current_ccus += current_emissions * (ccus_capture / 100)
+        ccus.append(min(current_ccus, current_emissions))
+        net_emissions.append(max(current_emissions - current_ccus, 0))
+        current_emissions *= (1 - reduction_rate / 100)
+
+    df = pd.DataFrame({
+        'Year': years,
+        'Baseline Emissions': emissions,
+        'CCUS Capture': ccus,
+        'Net Emissions': net_emissions
+    })
+
+    df.plot(x='Year', y=['Baseline Emissions', 'Net Emissions', 'CCUS Capture'], figsize=(10, 6), linewidth=2)
+    plt.title('Interactive Carbon Emissions Model with CCUS')
+    plt.ylabel('CO₂ Emissions (Mt)')
+    plt.grid(True)
+    plt.show()
+
+# Run the interactive tool
+widgets.interact(
+    update_model,
+    initial_emissions=initial_emissions_slider,
+    reduction_rate=reduction_rate_slider,
+    ccus_start=ccus_start_slider,
+    ccus_capture=ccus_capture_slider
+)
+
